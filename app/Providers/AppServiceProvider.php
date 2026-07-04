@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
         // Rešava grešku: 1071 Specified key was too long; max key length is 1000 bytes
         Schema::defaultStringLength(191);
 

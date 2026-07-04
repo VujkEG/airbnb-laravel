@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use Illuminate\Http\Request;
 use Auth;
 
 class CategoryController extends Controller
@@ -14,8 +15,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories=Category::latest()->get();
-        return view('kategorija.index',compact('categories'));
+        $categories = Category::latest()->get();
+        return view('kategorija.index', compact('categories'));
     }
 
     /**
@@ -29,19 +30,21 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCategoryRequest $request)
+    public function store(Request $request)
     {
+        // POPRAVLJENO: Uklonjena validacija za 'desc' polje
         $request->validate([
-            'name'=>'required|min:3',
-            'desc'=>'required'
+            'name' => 'required|min:3',
         ]);
-        $category=Category::create([
-            'name'=>$request->name,
-            'desc'=>$request->desc,
-            'created_by'=>Auth::user()->id,
-            'updated_by'=>Auth::user()->id
+
+        // POPRAVLJENO: Polje 'desc' se više ne prosleđuje prilikom kreiranja
+        $category = Category::create([
+            'name' => $request->name,
+            'created_by' => Auth::user()->id,
+            'updated_by' => Auth::user()->id
         ]);
-        return redirect()->route('kategorija.index')->with('status','Uspesno sacuvano');
+
+        return redirect()->route('kategorija.index')->with('status', 'Uspešno sačuvano');
     }
 
     /**
@@ -63,18 +66,19 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $kategorija)
+    public function update(Request $request, Category $kategorija)
     {
+        // POPRAVLJENO: Uklonjena validacija za 'desc' polje i ovde
         $request->validate([
-            'name'=>'required|min:3',
-            'desc'=>'required'
+            'name' => 'required|min:3',
         ]);
+
         $kategorija->update([
-            'name'=>$request->name,
-            'desc'=>$request->desc,
-            'updated_by'=>Auth::user()->id
+            'name' => $request->name,
+            'updated_by' => Auth::user()->id
         ]);
-        return redirect()->route('kategorija.index')->with('status','Uspesno sacuvano');
+
+        return redirect()->route('kategorija.index')->with('status', 'Uspešno sačuvano');
     }
 
     /**
@@ -83,6 +87,6 @@ class CategoryController extends Controller
     public function destroy(Category $kategorija)
     {
         $kategorija->delete();
-    return redirect()->route('kategorija.index')->with('status','Uspesno obrisano');
+        return redirect()->route('kategorija.index')->with('status', 'Uspešno obrisano');
     }
 }

@@ -4,7 +4,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 style="font-size:1.5rem; font-weight:700; color:#1a1a2e;">Smeštajni kapaciteti</h1>
-        <a href="{{ route('admin.proizvodi.create') }}" class="btn" style="background:#e53e3e; color:white; border-radius:8px; font-weight:600;">
+        <a href="{{ url('admin/smestaji/create') }}" class="btn" style="background:#e53e3e; color:white; border-radius:8px; font-weight:600;">
             <i class="bi bi-plus-lg me-2"></i>Dodaj smeštaj
         </a>
     </div>
@@ -16,7 +16,8 @@
     @endif
 
     <div style="background:white; border:1.5px solid #f1f5f9; border-radius:16px; padding:24px;">
-        @if($products->count() > 0)
+        {{-- POPRAVLJENO: Promenljiva prilagođena smeštajima --}}
+        @if($smestaji->count() > 0)
         <div class="table-responsive">
             <table class="table align-middle" style="font-size:14px;">
                 <thead style="background:#f8fafc;">
@@ -31,12 +32,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($products as $product)
+                    {{-- POPRAVLJENO: Izbačeni šoping nazivi, petlja koristi $smestaji i $smestaj --}}
+                    @foreach($smestaji as $smestaj)
                     <tr>
-                        <td>{{ $product->id }}</td>
+                        <td>{{ $smestaj->id }}</td>
                         <td>
-                            @if($product->image)
-                                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}"
+                            @if($smestaj->image)
+                                <img src="{{ asset($smestaj->image) }}" alt="{{ $smestaj->name }}"
                                      style="width:48px; height:48px; object-fit:cover; border-radius:8px;">
                             @else
                                 <div style="width:48px; height:48px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center;">
@@ -44,23 +46,23 @@
                                 </div>
                             @endif
                         </td>
-                        <td style="font-weight:600; color:#1a1a2e;">{{ $product->name }}</td>
+                        <td style="font-weight:600; color:#1a1a2e;">{{ $smestaj->name }}</td>
                         <td>
                             <span style="background:#f1f5f9; color:#1a1a2e; font-size:12px; padding:4px 12px; border-radius:20px; font-weight:500;">
-                                {{ $product->category->name }}
+                                {{ $smestaj->category->name ?? 'Nema regije' }}
                             </span>
                         </td>
                         <td style="color:#475569;">
-                            <span class="me-2" title="Gostiju"><i class="bi bi-people me-1"></i>{{ $product->max_guests }}</span>
-                            <span class="me-2" title="Sobe"><i class="bi bi-door-open me-1"></i>{{ $product->bedrooms }}</span>
-                            <span title="Kupatila"><i class="bi bi-droplet me-1"></i>{{ $product->bathrooms }}</span>
+                            <span class="me-2" title="Gostiju"><i class="bi bi-people me-1"></i>{{ $smestaj->max_guests }}</span>
+                            <span class="me-2" title="Sobe"><i class="bi bi-door-open me-1"></i>{{ $smestaj->bedrooms }}</span>
+                            <span title="Kupatila"><i class="bi bi-droplet me-1"></i>{{ $smestaj->bathrooms }}</span>
                         </td>
-                        <td style="font-weight:700; color:#e53e3e;">{{ number_format($product->price, 0, ',', '.') }} RSD</td>
+                        <td style="font-weight:700; color:#e53e3e;">{{ number_format($smestaj->price, 0, ',', '.') }} RSD</td>
                         <td>
-                            <a href="{{ route('admin.proizvodi.edit', $product) }}" class="btn btn-sm me-1" style="background:#f1f5f9; color:#1a1a2e; border-radius:6px; font-size:12px; font-weight:500;">
+                            <a href="{{ url('admin/smestaji/' . $smestaj->id . '/edit') }}" class="btn btn-sm me-1" style="background:#f1f5f9; color:#1a1a2e; border-radius:6px; font-size:12px; font-weight:500;">
                                 <i class="bi bi-pencil"></i> Izmeni
                             </a>
-                            <form action="{{ route('admin.proizvodi.destroy', $product) }}" method="POST" class="d-inline"
+                            <form action="{{ url('admin/smestaji/' . $smestaj->id) }}" method="POST" class="d-inline"
                                   onsubmit="return confirm('Da li ste sigurni da želite da obrišete ovaj smeštaj?')">
                                 @csrf
                                 @method('DELETE')
@@ -75,7 +77,7 @@
             </table>
         </div>
         <div class="mt-3">
-            {{ $products->links() }}
+            {{ $smestaji->links() }}
         </div>
         @else
         <div class="text-center py-5">

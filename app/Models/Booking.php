@@ -24,9 +24,9 @@ class Booking extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Relacija sa smeštajem (proizvodom)
+    // POPRAVLJENO: Koristi se tekstualna putanja do modela Apartman i tačan strani ključ iz baze
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo('App\Models\Apartman', 'product_id');
     }
 }

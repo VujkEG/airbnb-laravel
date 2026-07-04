@@ -17,20 +17,25 @@
                         <input type="text" id="locationInput" name="location" value="{{ trim(request('location')) }}" placeholder="Gde putuješ?" style="cursor: pointer;">
                         
                         <div class="location-popup d-none" id="locationPopup">
-                            <div class="popup-title">Popularne destinacije</div>
-                            <div class="popup-item" data-value="Beograd"><i class="fas fa-map-marker-alt"></i> Beograd</div>
-                            <div class="popup-item" data-value="Novi Sad"><i class="fas fa-map-marker-alt"></i> Novi Sad</div>
-                            <div class="popup-item" data-value="Zlatibor"><i class="fas fa-map-marker-alt"></i> Zlatibor</div>
-                            <div class="popup-item" data-value="Kopaonik"><i class="fas fa-map-marker-alt"></i> Kopaonik</div>
+                            <div class="popup-title">Dostupne destinacije</div>
+                            @if(isset($allLocations) && !$allLocations->isEmpty())
+                                @foreach($allLocations as $loc)
+                                    <div class="popup-item" data-value="{{ $loc }}"><i class="fas fa-map-marker-alt"></i> {{ $loc }}</div>
+                                @endforeach
+                            @else
+                                <div class="popup-item text-muted" style="cursor: default;"><i class="fas fa-info-circle"></i> Beograd</div>
+                                <div class="popup-item" data-value="Zlatibor"><i class="fas fa-map-marker-alt"></i> Zlatibor</div>
+                                <div class="popup-item" data-value="Kopaonik"><i class="fas fa-map-marker-alt"></i> Kopaonik</div>
+                            @endif
                         </div>
                     </div>
                     <div class="search-input-group">
                         <label>Prijava</label>
-                        <input type="date" name="check_in">
+                        <input type="date" name="check_in" value="{{ request('check_in') }}">
                     </div>
                     <div class="search-input-group">
                         <label>Odjava</label>
-                        <input type="date" name="check_out">
+                        <input type="date" name="check_out" value="{{ request('check_out') }}">
                     </div>
                     <div class="search-input-group">
                         <label>Gosti</label>
@@ -47,7 +52,7 @@
     {{-- KATEGORIJE --}}
     <div class="section-container">
         <h2 class="section-title">Istražite po kategorijama</h2>
-        <div class="categories-grid">
+        <div class="categories-scroll-wrapper">
             @foreach($categories as $category)
                 @php
                     $name = trim($category->name);
@@ -71,13 +76,13 @@
                         default                  => 'fa-home'
                     };
                 @endphp
-                <a href="{{ route('shop', ['category' => $category->id]) }}" class="category-card">
+                <a href="{{ route('shop', ['category' => $category->id]) }}" class="category-card-custom">
                     <div class="category-icon">
                         <i class="fas {{ $iconClass }}"></i>
                     </div>
                     <div class="category-info">
                         <h3>{{ $name }}</h3>
-                        <p>{{ $category->products_count ?? 0 }} smeštajnih jedinica</p>
+                        <p>{{ $category->products_count ?? 0 }} smeštaja</p>
                     </div>
                 </a>
             @endforeach
@@ -95,7 +100,6 @@
                     <div class="property-image-wrapper">
                         @php
                             $naslovSmeštaja = Str::lower($product->name);
-                            // POPRAVLJENO: Provera da li slika postoji lokalno u storage-u
                             if ($product->image) {
                                 if (Str::startsWith($product->image, ['http://', 'https://'])) {
                                     $finalUrl = $product->image;
@@ -153,6 +157,36 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- POPRAVLJENO: Sigurni i ručno stilizovani navigacioni blok koji garantuje vidljivost strelica --}}
+        <div class="custom-pagination-container">
+            @if ($featuredProducts->hasPages())
+                <nav class="custom-pagination-nav">
+                    {{-- Prethodna stranica --}}
+                    @if ($featuredProducts->onFirstPage())
+                        <span class="pagination-arrow disabled"><i class="fas fa-chevron-left"></i></span>
+                    @else
+                        <a href="{{ $featuredProducts->previousPageUrl() }}&home_page={{ $featuredProducts->currentPage() - 1 }}" class="pagination-arrow"><i class="fas fa-chevron-left"></i></a>
+                    @endif
+
+                    {{-- Brojevi stranica --}}
+                    @foreach ($featuredProducts->getUrlRange(1, $featuredProducts->lastPage()) as $page => $url)
+                        @if ($page == $featuredProducts->currentPage())
+                            <span class="pagination-number active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}&home_page={{ $page }}" class="pagination-number">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    {{-- Sledeća stranica --}}
+                    @if ($featuredProducts->hasMorePages())
+                        <a href="{{ $featuredProducts->nextPageUrl() }}&home_page={{ $featuredProducts->currentPage() + 1 }}" class="pagination-arrow"><i class="fas fa-chevron-right"></i></a>
+                    @else
+                        <span class="pagination-arrow disabled"><i class="fas fa-chevron-right"></i></span>
+                    @endif
+                </nav>
+            @endif
+        </div>
     </div>
 
 </div>
@@ -208,7 +242,7 @@
     .search-btn:hover { background: #E61E4D; }
 
     /* Pop-up lokacije stil */
-    .location-popup { position: absolute; top: 115%; left: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,0.15); padding: 15px 0; z-index: 999; border: 1px solid #eaeaea; }
+    .location-popup { position: absolute; top: 115%; left: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,0.15); padding: 15px 0; z-index: 999; border: 1px solid #eaeaea; max-height: 250px; overflow-y: auto; }
     .popup-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #717171; padding: 0 20px 10px 20px; letter-spacing: 0.5px; }
     .popup-item { padding: 10px 20px; font-size: 14px; color: #222; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
     .popup-item i { color: #717171; font-size: 14px; }
@@ -216,10 +250,15 @@
     .popup-item:hover i { color: #FF385C; }
     .d-none { display: none !important; }
 
-    /* Categories Style */
-    .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
-    .category-card { display: flex; align-items: center; padding: 20px; border: 1px solid #dddddd; border-radius: 16px; text-decoration: none; color: inherit; transition: all 0.2s ease-in-out; background: #fff; }
-    .category-card:hover { border-color: #FF385C; box-shadow: 0 10px 20px rgba(255,56,92,0.08); transform: translateY(-3px); }
+    /* Horizontalni scroll za kategorije */
+    .categories-scroll-wrapper { display: flex; gap: 20px; overflow-x: auto; padding: 10px 5px 20px 5px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+    .categories-scroll-wrapper::-webkit-scrollbar { height: 6px; }
+    .categories-scroll-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    .categories-scroll-wrapper::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+    .categories-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #FF385C; }
+    
+    .category-card-custom { display: flex; align-items: center; padding: 15px 25px; border: 1px solid #dddddd; border-radius: 16px; text-decoration: none; color: inherit; transition: all 0.2s ease-in-out; background: #fff; min-width: 260px; flex-shrink: 0; }
+    .category-card-custom:hover { border-color: #FF385C; box-shadow: 0 10px 20px rgba(255,56,92,0.08); transform: translateY(-3px); }
     .category-icon { font-size: 26px; color: #FF385C; margin-right: 18px; width: 40px; text-align: center; }
     .category-info h3 { font-size: 16px; font-weight: 700; margin: 0 0 2px 0; color: #1a1a2e; }
     .category-info p { font-size: 13px; color: #717171; margin: 0; }
@@ -241,5 +280,15 @@
     .property-footer { display: flex; justify-content: space-between; align-items: center; }
     .property-price { font-size: 15px; color: #222; }
     .view-btn { background: transparent; border: 1px solid #222; padding: 6px 16px; border-radius: 8px; text-decoration: none; color: #222; font-size: 13px; font-weight: 600; }
+
+    /* POPRAVLJENO: Unikatni Airbnb stil za numeraciju stranica */
+    .custom-pagination-container { display: flex; justify-content: center; margin-top: 50px; padding-bottom: 20px; }
+    .custom-pagination-nav { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 8px 16px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #ebebeb; }
+    .pagination-number { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; font-size: 14px; font-weight: 600; color: #222222; text-decoration: none; transition: 0.2s; }
+    .pagination-number:hover { background: #f7f7f7; color: #FF385C; }
+    .pagination-number.active { background: #222222; color: #ffffff !important; cursor: default; }
+    .pagination-arrow { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: #222222; text-decoration: none; transition: 0.2s; font-size: 12px; }
+    .pagination-arrow:hover:not(.disabled) { background: #f7f7f7; color: #FF385C; }
+    .pagination-arrow.disabled { color: #d5d5d5; cursor: not-allowed; }
 </style>
 @endsection

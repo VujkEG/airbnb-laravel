@@ -12,10 +12,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Nunito', sans-serif; color: #222222; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: #f8f9fa; font-family: 'Nunito', sans-serif; color: #222222; }
         
         /* Moderni Svetli Airbnb Navbar */
-        .navbar-main { background-color: #ffffff !important; border-bottom: 1px solid #ededed; padding: 15px 0; transition: background-color 0.3s, border-color 0.3s; }
+        .navbar-main { background-color: #ffffff !important; border-bottom: 1px solid #ededed; padding: 15px 0; }
         .navbar-main .navbar-brand { color: #FF385C !important; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; }
         .navbar-main .nav-link { color: #484848 !important; font-weight: 600; font-size: 15px; margin: 0 10px; transition: 0.2s; }
         .navbar-main .nav-link:hover,
@@ -33,70 +33,52 @@
         .social-icon { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; display: inline-flex; align-items: center; justify-content: center; color: #b0b0b0; margin-right: 8px; text-decoration: none; transition: 0.2s; }
         .social-icon:hover { border-color: #FF385C; color: #FF385C; background-color: rgba(255, 56, 92, 0.1); }
 
-        /* STILOVI ZA DARK MODE (Samo unutar Admin/Host Panela) */
-        body.admin-dark-mode {
-            background-color: #121212 !important;
-            color: #f5f5f5 !important;
+        /* Globalni stilovi za paginaciju */
+        .pagination {
+            display: inline-flex;
+            padding-left: 0;
+            list-style: none;
+            background: #ffffff;
+            padding: 6px 12px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            align-items: center;
+            gap: 4px;
         }
-        body.admin-dark-mode .navbar-main {
-            background-color: #1e1e1e !important;
-            border-bottom: 1px solid #2d2d2d !important;
+        .pagination .page-item {
+            display: inline;
         }
-        body.admin-dark-mode .navbar-main .nav-link {
-            color: #e0e0e0 !important;
+        .pagination .page-item .page-link {
+            color: #222222;
+            border: none;
+            background: transparent;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 50% !important;
+            transition: all 0.2s ease;
         }
-        body.admin-dark-mode .navbar-main .nav-link:hover,
-        body.admin-dark-mode .navbar-main .nav-link.active {
-            color: #FF385C !important;
-        }
-        body.admin-dark-mode .card {
-            background-color: #1e1e1e !important;
-            border-color: #2d2d2d !important;
-            color: #f5f5f5 !important;
-        }
-        body.admin-dark-mode .card-header, body.admin-dark-mode .card-footer {
-            background-color: #252525 !important;
-            border-color: #2d2d2d !important;
+        .pagination .page-item.active .page-link {
+            background-color: #222222 !important;
             color: #ffffff !important;
         }
-        body.admin-dark-mode .table {
-            color: #e0e0e0 !important;
-            border-color: #2d2d2d !important;
+        .pagination .page-item .page-link:hover {
+            background-color: #f1f5f9;
+            color: #222222;
         }
-        body.admin-dark-mode .table th, body.admin-dark-mode .table td {
-            background-color: #1e1e1e !important;
-            border-color: #2d2d2d !important;
+        .pagination .page-item:first-child .page-link, 
+        .pagination .page-item:last-child .page-link {
+            color: #94a3b8;
+            font-size: 16px;
         }
-        body.admin-dark-mode .dropdown-menu {
-            background-color: #1e1e1e !important;
-            border-color: #2d2d2d !important;
-        }
-        body.admin-dark-mode .dropdown-item {
-            color: #e0e0e0 !important;
-        }
-        body.admin-dark-mode .dropdown-item:hover {
-            background-color: #2d2d2d !important;
-        }
-        body.admin-dark-mode .form-control, body.admin-dark-mode .form-select {
-            background-color: #252525 !important;
-            border-color: #333333 !important;
-            color: #ffffff !important;
-        }
-        body.admin-dark-mode .form-control:focus, body.admin-dark-mode .form-select:focus {
-            background-color: #2a2a2a !important;
-            color: #ffffff !important;
-            border-color: #FF385C !important;
-            box-shadow: 0 0 0 0.25px rgba(255, 56, 92, 0.5) !important;
-        }
-        body.admin-dark-mode .alert {
-            background-color: #2d1a1e !important;
-            border-color: #4c1d24 !important;
-            color: #ff99a8 !important;
-        }
-        body.admin-dark-mode .alert-success {
-            background-color: #14281d !important;
-            border-color: #1e462f !important;
-            color: #a3cfbb !important;
+        .pagination .page-item .page-link:focus {
+            box-shadow: none;
         }
     </style>
 </head>
@@ -125,23 +107,12 @@
                 </ul>
 
                 <ul class="navbar-nav ms-auto align-items-center">
-                    {{-- DUGME ZA LISTU ŽELJA (FAVORITI) --}}
                     <li class="nav-item me-3">
                         <a href="javascript:void(0)" class="nav-link position-relative p-2" data-bs-toggle="modal" data-bs-target="#wishlistModal" title="Moja Lista Želja">
                             <i class="bi bi-heart-fill text-danger fs-5"></i>
                             <span id="wishlist-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 10px; display: none;">0</span>
                         </a>
                     </li>
-
-                    @auth
-                        @if(Auth::user()->role === 'host' || Auth::user()->is_admin)
-                            <li class="nav-item me-2">
-                                <button id="darkModeToggle" class="btn btn-link nav-link p-2" style="border: none; text-decoration: none;" title="Promeni režim svetla">
-                                    <i id="darkModeIcon" class="bi bi-moon-stars-fill fs-5" style="color: #484848;"></i>
-                                </button>
-                            </li>
-                        @endif
-                    @endauth
 
                     @guest
                         @if (Route::has('login'))
@@ -158,7 +129,6 @@
                         <li class="nav-item dropdown me-3">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ Auth::user()->name }} 
-                                <span class="badge bg-secondary ms-1" style="font-size: 10px;">{{ strtoupper(Auth::user()->role) }}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                 @if(Auth::user()->role === 'host' || Auth::user()->is_admin)
@@ -201,7 +171,6 @@
         </div>
     </nav>
 
-    {{-- ELEGANTAN MODAL ZA PRIKAZ LISTE ŽELJA --}}
     <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow" style="border-radius: 16px;">
@@ -209,9 +178,8 @@
                     <h5 class="modal-title fw-bold" id="wishlistModalLabel"><i class="bi bi-heart-fill text-danger me-2"></i>Moja lista želja</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4" style="max-height: 400px; overflow-y: auto;">
-                    <div id="wishlist-items-container">
-                        </div>
+                <div class="modal-header-body p-4" style="max-height: 400px; overflow-y: auto;">
+                    <div id="wishlist-items-container"></div>
                 </div>
             </div>
         </div>
@@ -305,9 +273,8 @@
         <div class="border-top pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-color:#333 !important;">
             <span style="font-size:13px; color: #717171;">© {{ date('Y') }} Avenija Smeštaj. Sva prava zadržana.</span>
             <div class="d-flex gap-2">
-                <a href="#" class="d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; color: #b0b0b0; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#FF385C'; this.style.color='#FF385C';" onmouseout="this.style.borderColor='#444'; this.style.color='#b0b0b0';"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; color: #b0b0b0; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#FF385C'; this.style.color='#FF385C';" onmouseout="this.style.borderColor='#444'; this.style.color='#b0b0b0';"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; color: #b0b0b0; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#FF385C'; this.style.color='#FF385C';" onmouseout="this.style.borderColor='#444'; this.style.color='#b0b0b0';"><i class="bi bi-twitter-x"></i></a>
+                <a href="https://www.facebook.com/login" target="_blank" class="d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; color: #b0b0b0; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#FF385C'; this.style.color='#FF385C';" onmouseout="this.style.borderColor='#444'; this.style.color='#b0b0b0';"><i class="bi bi-facebook"></i></a>
+                <a href="https://www.instagram.com" target="_blank" class="d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #444; color: #b0b0b0; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#FF385C'; this.style.color='#FF385C';" onmouseout="this.style.borderColor='#444'; this.style.color='#b0b0b0';"><i class="bi bi-instagram"></i></a>
             </div>
         </div>
     </div>
@@ -332,7 +299,6 @@ function filtrirajGrad(imeGrada) {
     }
 }
 
-// LOGIKA ZA STRUKTURU FAVORITA UNUTAR NAVBAR-A KOJA RADI BILO GDE NA SAJTU
 function osveziMeniFavorita() {
     let favoriti = JSON.parse(localStorage.getItem('smestaj_favoriti')) || [];
     let badge = document.getElementById('wishlist-badge');
@@ -357,6 +323,8 @@ function osveziMeniFavorita() {
         
         let html = '<div class="list-group list-group-flush">';
         favoriti.forEach(item => {
+            // POPRAVLJENO: Lista želja sada koristi item.slug ako postoji, a pada nazad na ID samo ako nema slug-a
+            let rutaDetalji = item.slug ? `/smestaj/${item.slug}` : `/smestaj/${item.id}`;
             html += `
                 <div class="list-group-item d-flex align-items-center justify-content-between border-0 py-3 px-0">
                     <div class="d-flex align-items-center">
@@ -368,7 +336,7 @@ function osveziMeniFavorita() {
                         </div>
                     </div>
                     <div class="d-flex flex-column gap-2">
-                        <a href="/smestaj/${item.id}" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:11px; font-weight:600;">Pogledaj</a>
+                        <a href="${rutaDetalji}" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:11px; font-weight:600;">Pogledaj</a>
                         <button onclick="ukloniIzFavoritaDirektno(${item.id})" class="btn btn-sm btn-light text-muted border-0 rounded-circle" style="width:28px; height:28px; padding:0;" title="Ukloni"><i class="bi bi-trash"></i></button>
                     </div>
                 </div>
@@ -385,7 +353,6 @@ function ukloniIzFavoritaDirektno(id) {
     localStorage.setItem('smestaj_favoriti', JSON.stringify(favoriti));
     osveziMeniFavorita();
     
-    // Ako se nalazimo na shop stranici, ažuriraj i tamošnju ikonicu srca
     let dugmeNaStranici = document.querySelector(`.fav-btn[data-id="${id}"]`);
     if(dugmeNaStranici) {
         let ikonica = dugmeNaStranici.querySelector('i');
@@ -396,40 +363,6 @@ function ukloniIzFavoritaDirektno(id) {
 
 document.addEventListener('DOMContentLoaded', function() {
     osveziMeniFavorita();
-
-    // DARK MODE PANEL LOGIKA
-    const toggleBtn = document.getElementById('darkModeToggle');
-    const toggleIcon = document.getElementById('darkModeIcon');
-    const isPanelPage = window.location.href.includes('/host') || window.location.href.includes('/admin');
-
-    if (isPanelPage) {
-        const isDarkMode = localStorage.getItem('admin-dark-mode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('admin-dark-mode');
-            if(toggleIcon) {
-                toggleIcon.classList.remove('bi-moon-stars-fill');
-                toggleIcon.classList.add('bi-sun-fill');
-                toggleIcon.style.color = '#ffc107';
-            }
-        }
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function() {
-                const currentDark = document.body.classList.toggle('admin-dark-mode');
-                localStorage.setItem('admin-dark-mode', currentDark);
-                if (currentDark) {
-                    toggleIcon.classList.remove('bi-moon-stars-fill');
-                    toggleIcon.classList.add('bi-sun-fill');
-                    toggleIcon.style.color = '#ffc107';
-                } else {
-                    toggleIcon.classList.remove('bi-sun-fill');
-                    toggleIcon.classList.add('bi-moon-stars-fill');
-                    toggleIcon.style.color = '#484848';
-                }
-            });
-        }
-    } else {
-        if (toggleBtn) { toggleBtn.style.display = 'none'; }
-    }
 });
 </script>
 </div>

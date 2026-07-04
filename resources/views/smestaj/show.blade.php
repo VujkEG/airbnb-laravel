@@ -2,7 +2,6 @@
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
 
 <div class="container py-5" style="max-width: 1200px;">
@@ -37,23 +36,11 @@
         </div>
     </div>
 
-    {{-- GALERIJA SLIKA (POPRAVLJENO: Omogućen klik i šaltanje levo-desno kroz sve slike objekta) --}}
+    {{-- POPRAVLJENO: Sigurna obrada galerije slika bez rizika od TypeError rušenja --}}
     @php
-        // Izvlačimo galeriju sporednih slika iz baze podataka
         $galerijaSlika = is_string($product->gallery_images) ? json_decode($product->gallery_images, true) : $product->gallery_images;
-        $galerijaSlika = $galerijaSlika ?? [];
-
-        // Glavna slika
+        $galerijaSlika = is_array($galerijaSlika) ? array_values($galerijaSlika) : [];
         $glavnaSlika = $product->image ? asset($product->image) : 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80';
-
-        // Sporedne slike (provera i fallback ako ne postoje u bazi)
-        if(str_contains(strtolower($product->name), 'panda')) {
-            $sporedna1 = isset($galerijaSlika[0]) ? asset($galerijaSlika[0]) : 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=600&auto=format&fit=crop';
-            $sporedna2 = isset($galerijaSlika[1]) ? asset($galerijaSlika[1]) : 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=600&auto=format&fit=crop';
-        } else {
-            $sporedna1 = isset($galerijaSlika[0]) ? asset($galerijaSlika[0]) : 'https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=600';
-            $sporedna2 = isset($galerijaSlika[1]) ? asset($galerijaSlika[1]) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600';
-        }
     @endphp
 
     <div class="row g-2 mb-4">
@@ -65,8 +52,12 @@
                 </div>
             </a>
         </div>
-        {{-- Desne dve sporedne slike --}}
+        {{-- Desna kolona sa sporednim slikama ako postoje u bazi --}}
         <div class="col-md-4 d-none d-md-flex flex-column justify-content-between">
+            @php
+                $sporedna1 = isset($galerijaSlika[0]) ? asset($galerijaSlika[0]) : 'https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=600';
+                $sporedna2 = isset($galerijaSlika[1]) ? asset($galerijaSlika[1]) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600';
+            @endphp
             <a href="{{ $sporedna1 }}" data-fancybox="apartman-galerija" data-caption="Unutrašnjost / Detalji smeštaja">
                 <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm bg-light mb-2 image-hover-zoom" style="cursor: pointer;">
                     <img src="{{ $sporedna1 }}" class="img-fluid object-fit-cover" alt="Sporedna slika 1">
@@ -80,9 +71,19 @@
         </div>
     </div>
 
+    {{-- Sakriveni linkovi za Fancybox ako ima više od 2 sporedne slike da mogu sve da se listaju levo-desno --}}
+    @if(count($galerijaSlika) > 2)
+        <div class="d-none">
+            @foreach($galerijaSlika as $index => $slika)
+                @if($index >= 2)
+                    <a href="{{ asset($slika) }}" data-fancybox="apartman-galerija" data-caption="Galerija fotografija - Slika {{ $index + 1 }}"></a>
+                @endif
+            @endforeach
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-lg-7">
-            {{-- Airbnb Struktura / Kapacitet Objekta --}}
             <div class="d-flex flex-wrap gap-4 mb-4 p-3 bg-light rounded-3 shadow-sm border text-secondary" style="font-size: 14px; font-weight: 500;">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fa-solid fa-users text-dark fs-5"></i>
@@ -119,7 +120,6 @@
                             'TV' => ['icon' => 'fa-tv', 'name' => 'Kablovska TV'],
                             'Dvorište' => ['icon' => 'fa-tree', 'name' => 'Uređeno dvorište']
                         ];
-                        
                         $decodedAmenities = is_string($product->amenities) ? json_decode($product->amenities, true) : $product->amenities;
                     @endphp
 
@@ -151,7 +151,7 @@
                         <div class="col-md-6">
                             <div class="card h-100 p-3 border rounded-3 shadow-sm bg-body">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="fw-bold mb-0">{{ $review->user->name ?? 'Gost' }}</h6>
+                                    <h6 class="fw-bold mb-0">{{ $review->user->name ?? 'Korisnik' }}</h6>
                                     <div class="text-warning small">
                                         @for($i = 1; $i <= 5; $i++)
                                             <i class="{{ $i <= $review->rating ? 'fas fa-star' : 'far fa-star' }}"></i>
@@ -242,13 +242,11 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link class="df" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 
 <style>
-    /* Glatki zoom efekat kada se pređe mišem preko slike */
     .image-hover-zoom img {
         transition: transform 0.3s ease;
     }
@@ -262,7 +260,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Pokretanje Fancybox galerije
         Fancybox.bind("[data-fancybox='apartman-galerija']", {
             Infinite: true,
             Thumbs: { autoStart: true }

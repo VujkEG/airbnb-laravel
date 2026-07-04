@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    {{-- Prikaz poruke o uspešnom otkazivanju (Podržava i 'success' i 'status') --}}
+    {{-- Prikaz poruka --}}
     @if(session('success') || session('status'))
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert" style="background-color: #e6f4ea; color: #137333;">
             <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') ?? session('status') }}
@@ -30,7 +30,6 @@
     @endif
 
     @if($bookings->isEmpty())
-        {{-- Airbnb Prazno Stanje --}}
         <div class="text-center py-5 my-5">
             <div class="mb-4">
                 <i class="bi bi-suitcase-lg" style="font-size: 80px; color: #b0b0b0;"></i>
@@ -53,7 +52,6 @@
                         $linkObjekta = $smeštaj ? route('smestaj.show', $smeštaj->id) : '#';
                     @endphp
                     
-                    {{-- POPRAVLJENO: Kartica je sada u potpunosti klikabilna i vodi na detalje smeštaja --}}
                     <div class="card h-100 border rounded-4 overflow-hidden shadow-sm clickable-booking-card" 
                          onclick="if(!event.target.closest('.no-card-click')){ window.location='{{ $linkObjekta }}'; }"
                          style="border-color: #ededed !important; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
@@ -86,7 +84,6 @@
 
                                 <img src="{{ $slikaUrl }}" alt="Smeštaj" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0;">
                                 
-                                {{-- Sinhronizovani statusni bedževi --}}
                                 <div class="position-absolute top-0 start-0 m-3 z-index-2">
                                     @if(in_array($status, ['approved', 'confirmed', 'potvrđeno', 'potvrdjeno', 'plaćeno']))
                                         @if($isPastBooking)
@@ -143,13 +140,12 @@
                                     </div>
                                 </div>
 
-                                {{-- Dugmad (Zadržavaju klasu .no-card-click kako se ne bi aktivirao link cele kartice) --}}
+                                {{-- Dugmad --}}
                                 <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-2 flex-wrap" style="border-top: 1px dashed #f0f0f0;">
                                     <button class="btn btn-outline-dark btn-sm rounded-pill px-4 fw-bold no-card-click" style="font-size: 13px;" onclick="window.print()">
                                         <i class="bi bi-printer me-2"></i>Odštampaj potvrdu
                                     </button>
 
-                                    {{-- Prikaži dugme za otkazivanje samo ako status nije otkazan I ako datum odjave još NIJE prošao --}}
                                     @if(!in_array($status, ['cancelled', 'otkazano', 'rejected']) && !$isPastBooking)
                                         <form action="{{ route('bookings.destroy', $booking->id) }}" method="POST" onsubmit="return confirm('Da li ste sigurni da želite da otkažete ovu rezervaciju?');" class="m-0 no-card-click">
                                             @csrf
@@ -171,18 +167,14 @@
 </div>
 
 <style>
-    /* Hover efekat za celu karticu */
     .clickable-booking-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
         border-color: #cbd5e1 !important;
     }
-    /* Kada pređemo preko kartice, naslov dobija prepoznatljivu Airbnb boju */
     .clickable-booking-card:hover .target-title {
         color: #FF385C !important;
     }
-
-    /* Pametno upravljanje ivicama na osnovu veličine ekrana */
     @media (min-width: 576px) {
         .border-section { 
             border-right: 1px solid #ededed !important; 
@@ -194,7 +186,6 @@
             padding-bottom: 10px;
         }
     }
-    
     .z-index-2 {
         z-index: 2;
     }

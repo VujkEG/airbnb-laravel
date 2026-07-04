@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Booking;
-use App\Models\Product;
+use App\Models\Apartman; // POPRAVLJENO: Uvezen novi model Apartman umesto starog Product
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -35,6 +35,7 @@ class BookingController extends Controller
 
     public function myBookings()
     {
+        // POPRAVLJENO: Osveženo povlačenje relacije apartmana
         $bookings = Booking::with('product')
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
@@ -45,8 +46,9 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        // POPRAVLJENO: Validacija proverava tabelu 'apartmani'
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'required|exists:apartmani,id',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after:start_date',
         ], [
@@ -58,7 +60,7 @@ class BookingController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        // Double-booking provera (gledamo samo one koje su odobrene ili na čekanju)
+        // Double-booking provera
         $isBooked = Booking::where('product_id', $productId)
             ->whereIn('status', ['confirmed', 'approved', 'Potvrđeno', 'na čekanju'])
             ->where(function ($query) use ($startDate, $endDate) {
@@ -71,7 +73,7 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Nažalost, ovaj smeštaj je već rezervisan u izabranom periodu. Molimo vas izaberite druge datume.');
         }
 
-        $product = Product::findOrFail($productId);
+        $product = Apartman::findOrFail($productId);
         
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
@@ -85,7 +87,7 @@ class BookingController extends Controller
             'start_date' => $startDate,
             'end_date' => $endDate,
             'total_price' => $totalPrice,
-            'status' => 'na čekanju' // Nova rezervacija ide na čekanje admina
+            'status' => 'na čekanju'
         ]);
 
         return redirect()->back()->with('status', 'Uspešno ste poslali zahtev za rezervaciju! Kada admin odobri, vaši datumi će biti zaključani.');

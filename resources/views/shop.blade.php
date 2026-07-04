@@ -167,7 +167,6 @@
                                 
                                 @php
                                     $naslovSmeštaja = Str::lower($product->name);
-                                    // POPRAVLJENO: Provera da li slika postoji lokalno u storage-u
                                     if ($product->image) {
                                         if (Str::startsWith($product->image, ['http://', 'https://'])) {
                                             $finalUrl = $product->image;
@@ -213,11 +212,13 @@
                                         data-lokacija="{{ $dinamickiGrad }}"
                                         data-cena="{{ $cenaTekst }} / noć"
                                         data-slika="{{ $finalUrl }}"
+                                        data-slug="{{ $product->slug ?? $product->id }}"
                                         style="top: 12px; right: 12px; background: white; border: none; width: 34px; height: 34px; transition: transform 0.2s ease; z-index: 20; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
                                     <i class="bi bi-heart text-secondary fs-6" style="transition: color 0.2s, transform 0.2s;"></i>
                                 </button>
 
-                                <a href="{{ route('smestaj.show', $product->id) }}" style="text-decoration: none; display: block;">
+                                {{-- POPRAVLJENO: Prosleđuje slug ili id u ruti --}}
+                                <a href="{{ route('smestaj.show', $product->slug ?? $product->id) }}" style="text-decoration: none; display: block;">
                                     <img src="{{ $finalUrl }}" alt="{{ $product->name }}" 
                                          style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.5s;" 
                                          onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
@@ -233,7 +234,7 @@
                                 <div>
                                     <div class="d-flex justify-content-between align-items-start gap-2" style="margin-bottom: 4px;">
                                         <div style="font-size: 16px; font-weight: 700; color: #1a1a2e; line-height: 1.4; min-height: 44px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1;">
-                                            <a href="{{ route('smestaj.show', $product->id) }}" style="color: #1a1a2e; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ff385c'" onmouseout="this.style.color='#1a1a2e'">
+                                            <a href="{{ route('smestaj.show', $product->slug ?? $product->id) }}" style="color: #1a1a2e; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ff385c'" onmouseout="this.style.color='#1a1a2e'">
                                                 {{ $product->name }}
                                             </a>
                                         </div>
@@ -268,11 +269,11 @@
                                         <span style="font-size: 13px; color: #64748b; font-weight: 500;"> / noć</span>
                                     </div>
 
-                                    <a href="{{ route('smestaj.show', $product->id) }}" 
+                                    <a href="{{ route('smestaj.show', $product->slug ?? $product->id) }}" 
                                        style="display: block; width: 100%; background: #1a1a2e; color: white; font-size: 13px; padding: 11px; border-radius: 10px; font-weight: 600; text-decoration: none; text-align: center; border: none; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(26,26,46,0.1);"
                                        onmouseover="this.style.background='#ff385c'; this.style.boxShadow='0 4px 12px rgba(255,56,92,0.25)';"
                                        onmouseout="this.style.background='#1a1a2e'; this.style.boxShadow='0 4px 6px -1px rgba(26,26,46,0.1)';">
-                                        Pogledaj smeštaj
+                                         Pogledaj smeštaj
                                     </a>
                                 </div>
                             </div>
@@ -391,12 +392,13 @@
                 let lokacija = this.getAttribute('data-lokacija');
                 let cena = this.getAttribute('data-cena');
                 let slika = this.getAttribute('data-slika');
+                let slug = this.getAttribute('data-slug');
                 
                 favoriti = JSON.parse(localStorage.getItem('smestaj_favoriti')) || [];
                 let indeks = favoriti.findIndex(x => x.id == currentId);
                 
                 if(indeks === -1) {
-                    favoriti.push({ id: currentId, naslov, lokacija, cena, slika });
+                    favoriti.push({ id: currentId, naslov, lokacija, cena, slika, slug: slug });
                     ikonica.classList.remove('bi-heart', 'text-secondary');
                     ikonica.classList.add('bi-heart-fill', 'text-danger');
                 } else {

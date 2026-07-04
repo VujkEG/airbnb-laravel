@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Product;
+use App\Models\Apartman; // POPRAVLJENO: Uvezen novi model Apartman umesto starog Product
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,8 +27,8 @@ class AdminController extends Controller
             ->whereBetween('start_date', [Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()])
             ->count();
 
-        // 3. Procenat popunjenosti kapaciteta u tekućem mesecu
-        $totalProperties = Product::count();
+        // 3. Procenat popunjenosti kapaciteta u tekućem mesecu (POPRAVLJENO: Koristi se model Apartman)
+        $totalProperties = Apartman::count();
         $daysInMonth = Carbon::now()->daysInMonth;
         $totalPossibleAvailableDays = $totalProperties * $daysInMonth;
 
@@ -74,13 +74,13 @@ class AdminController extends Controller
         ));
     }
 
-    // DODATO: Prikaz stranice sa kalendarom
+    // Prikaz stranice sa kalendarom
     public function calendarView()
     {
         return view('admin.calendar');
     }
 
-    // DODATO: JSON API koji FullCalendar poziva da povuče zauzete termine
+    // JSON API koji FullCalendar poziva da povuče zauzete termine
     public function getCalendarEvents()
     {
         $bookings = Booking::with(['product', 'user'])->get();
@@ -95,14 +95,13 @@ class AdminController extends Controller
             } elseif (in_array($status, ['approved', 'confirmed', 'potvrđeno', 'potvrdjeno'])) {
                 $color = '#ef4444'; // Crvena za zauzeto/potvrđeno
             } else {
-                continue; // Preskoči otkazane rezervacije na kalendaru
+                $color = '#94a3b8'; // Sivi fallback za ostale statuse
             }
 
             $events[] = [
                 'id' => $booking->id,
                 'title' => ($booking->product->name ?? 'Apartman') . ' - ' . ($booking->user->name ?? 'Gost'),
                 'start' => $booking->start_date,
-                // FullCalendar ekskluzivno polje 'end' tretira kao "do pre ovog dana", pa dodajemo +1 dan da vizuelno obuhvati i dan odjave
                 'end' => Carbon::parse($booking->end_date)->addDay()->toDateString(),
                 'backgroundColor' => $color,
                 'borderColor' => $color,

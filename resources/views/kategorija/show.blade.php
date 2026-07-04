@@ -3,57 +3,46 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Objave iz kat: {{ $kategorija->Name }}
-                    <a href="{{ route('post.create') }}" class="btn btn-success float-end" >Dodaj novu objavu</a>
+                <div class="card-header fw-bold text-uppercase" style="color:#1a1a2e; font-size: 15px;">
+                    Detalji Lokacije / Kategorije
                 </div>
 
                 <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-                            
-                            <table class="table">
-                                <thead>
-                                  <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Ime</th>
-                                    <th scope="col">Opis</th>
-                                    <th scope="col">Kreirao</th>
-                                    <th>IZMENIO</th>
-                                    <th>EDIT</th>
-                                    <th>OBRIŠI</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  @foreach ($kategorija->posts as $post)
-                                  <tr>
-                                    <th scope="row">{{ $post->id }}</th>
-                                    <td>{{ $post->name }}</td>
-                                    <td>{{ $post->desc }}</td>
-                                    <td>{{ $post->author->name }}</td>
-                                    <td>{{ $post->editor->name }}</td>
-                                    <td><a href="{{ route('post.edit',$post->slug) }}" class="btn btn-warning">IZMENI</a></td>
-                                    <td>
-                                        <form action="{{ route('post.destroy', $post->slug) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                    
-                                            <button type="submit" class="btn btn-danger">
-                                                DELETE
-                                            </button>
-                                        </form>
-                                    </td>
-                                    <td></td>
-                                  </tr>
-                                    @endforeach
-                                </tbody>
-                              </table>
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase d-block">ID:</label>
+                        <span class="fs-5 text-dark">#{{ $kategorija->id }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase d-block">Ime:</label>
+                        <span class="fs-5 fw-bold" style="color: #1a1a2e;">
+                            {{ $kategorija->name ?? ($kategorija->Name ?? ($kategorija->naziv ?? ($kategorija->title ?? 'Grad #' . $kategorija->id))) }}
+                        </span>
+                    </div>
+
+                    {{-- POPRAVLJENO: Kompletan blok za "Opis" je uklonjen jer je prazan (blank) --}}
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase d-block">Kreirao:</label>
+                        <span class="text-secondary">{{ $kategorija->author->name ?? 'Admin Domaćin' }}</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-bold text-muted small text-uppercase d-block">Izmenio:</label>
+                        <span class="text-secondary">{{ $kategorija->editor->name ?? 'Admin Domaćin' }}</span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('kategorija.index') }}" class="btn btn-secondary fw-bold">
+                            <i class="bi bi-arrow-left"></i> Nazad na listu
+                        </a>
+                        <a href="{{ route('kategorija.edit', $kategorija->id) }}" class="btn btn-warning fw-bold">
+                            IZMENI
+                        </a>
+                    </div>
                 </div>
-                
             </div>
         </div>
     </div>

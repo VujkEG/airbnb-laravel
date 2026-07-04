@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Apartman;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
-class AdminProductController extends Controller
+class AdminApartmanController extends Controller
 {
     public function __construct()
     {
@@ -16,14 +16,15 @@ class AdminProductController extends Controller
 
     public function index()
     {
-        $products = Product::with('category')->latest()->paginate(10);
-        return view('admin.proizvodi.index', compact('products'));
+        // POPRAVLJENO: Promenljiva preimenovana u $smestaji radi uklanjanja e-commerce terminologije
+        $smestaji = Apartman::with('category')->latest()->paginate(10);
+        return view('admin.apartmani.index', compact('smestaji'));
     }
 
     public function create()
     {
         $categories = Category::all();
-        return view('admin.proizvodi.create', compact('categories'));
+        return view('admin.apartmani.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -36,8 +37,8 @@ class AdminProductController extends Controller
             'price'           => 'required|numeric|min:0',
             'category_id'     => 'required|exists:categories,id',
             'image'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery_image_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery_image_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery_images'  => 'nullable|array',
+            'gallery_images.*'=> 'image|mimes:jpg,jpeg,png,webp|max:2048',
             'max_guests'      => 'required|integer|min:1',
             'bedrooms'        => 'required|integer|min:1',
             'bathrooms'       => 'required|integer|min:1',
@@ -50,24 +51,21 @@ class AdminProductController extends Controller
         }
 
         $galleryPaths = [];
-        if ($request->hasFile('gallery_image_1')) {
-            $galleryPaths[0] = 'storage/' . $request->file('gallery_image_1')->store('products', 'public');
-        }
-        if ($request->hasFile('gallery_image_2')) {
-            $galleryPaths[1] = 'storage/' . $request->file('gallery_image_2')->store('products', 'public');
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $file) {
+                $galleryPaths[] = 'storage/' . $file->store('products', 'public');
+            }
         }
 
-        ksort($galleryPaths);
-        $galleryJson = !empty($galleryPaths) ? json_encode(array_values($galleryPaths), JSON_UNESCAPED_UNICODE) : null;
+        $galleryJson = !empty($galleryPaths) ? json_encode($galleryPaths, JSON_UNESCAPED_UNICODE) : null;
         $amenitiesJson = $request->has('amenities') ? json_encode($request->amenities, JSON_UNESCAPED_UNICODE) : null;
 
-        // Spajamo grad i adresu u lokaciju ako je grad unesen, da ne puca baza zbog 'city' kolone
         $spojenaLokacija = $request->location;
         if ($request->filled('city')) {
             $spojenaLokacija = $request->city . ', ' . $request->location;
         }
 
-        Product::create([
+        Apartman::create([
             'name'            => $request->name,
             'location'        => $spojenaLokacija,
             'description'     => $request->desc,
@@ -83,19 +81,20 @@ class AdminProductController extends Controller
             'updated_by'      => auth()->id(),
         ]);
 
-        return redirect()->route('admin.proizvodi.index')->with('status', 'Smeštaj uspešno dodat!');
+        return redirect('admin/smestaji')->with('status', 'Smeštaj uspešno dodat!');
     }
 
     public function edit($smestaji)
     {
-        $proizvodi = Product::findOrFail($smestaji);
+        // POPRAVLJENO: Promenljiva preimenovana u $smestaj umesto e-commerce naziva $proizvodi
+        $smestaj = Apartman::findOrFail($smestaji);
         $categories = Category::all();
-        return view('admin.proizvodi.edit', compact('proizvodi', 'categories'));
+        return view('admin.apartmani.edit', compact('smestaj', 'categories'));
     }
 
     public function update(Request $request, $smestaji)
     {
-        $proizvodi = Product::findOrFail($smestaji);
+        $smestaj = Apartman::findOrFail($smestaji);
 
         $request->validate([
             'name'            => 'required|string|max:255',
@@ -105,41 +104,38 @@ class AdminProductController extends Controller
             'price'           => 'required|numeric|min:0',
             'category_id'     => 'required|exists:categories,id',
             'image'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery_image_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'gallery_image_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery_images'  => 'nullable|array',
+            'gallery_images.*'=> 'image|mimes:jpg,jpeg,png,webp|max:2048',
             'max_guests'      => 'required|integer|min:1',
             'bedrooms'        => 'required|integer|min:1',
             'bathrooms'       => 'required|integer|min:1',
             'amenities'       => 'nullable|array',
         ]);
 
-        $imagePath = $proizvodi->image;
+        $imagePath = $smestaj->image;
         if ($request->hasFile('image')) {
-            if ($proizvodi->image && file_exists(public_path($proizvodi->image))) {
-                @unlink(public_path($proizvodi->image));
+            if ($smestaj->image && file_exists(public_path($smestaj->image))) {
+                @unlink(public_path($smestaj->image));
             }
             $imagePath = 'storage/' . $request->file('image')->store('products', 'public');
         }
 
-        $currentGallery = is_string($proizvodi->gallery_images) ? json_decode($proizvodi->gallery_images, true) : $proizvodi->gallery_images;
+        $currentGallery = is_string($smestaj->gallery_images) ? json_decode($smestaj->gallery_images, true) : $smestaj->gallery_images;
         $currentGallery = $currentGallery ?? [];
 
-        if ($request->hasFile('gallery_image_1')) {
-            if (isset($currentGallery[0]) && file_exists(public_path($currentGallery[0]))) {
-                @unlink(public_path($currentGallery[0]));
+        if ($request->hasFile('gallery_images')) {
+            foreach ($currentGallery as $oldImg) {
+                if (file_exists(public_path($oldImg))) {
+                    @unlink(public_path($oldImg));
+                }
             }
-            $currentGallery[0] = 'storage/' . $request->file('gallery_image_1')->store('products', 'public');
+            $currentGallery = [];
+            foreach ($request->file('gallery_images') as $file) {
+                $currentGallery[] = 'storage/' . $file->store('products', 'public');
+            }
         }
 
-        if ($request->hasFile('gallery_image_2')) {
-            if (isset($currentGallery[1]) && file_exists(public_path($currentGallery[1]))) {
-                @unlink(public_path($currentGallery[1]));
-            }
-            $currentGallery[1] = 'storage/' . $request->file('gallery_image_2')->store('products', 'public');
-        }
-
-        ksort($currentGallery);
-        $galleryJson = !empty($currentGallery) ? json_encode(array_values($currentGallery), JSON_UNESCAPED_UNICODE) : null;
+        $galleryJson = !empty($currentGallery) ? json_encode($currentGallery, JSON_UNESCAPED_UNICODE) : null;
         $amenitiesJson = $request->has('amenities') ? json_encode($request->amenities, JSON_UNESCAPED_UNICODE) : null;
 
         $spojenaLokacija = $request->location;
@@ -147,7 +143,7 @@ class AdminProductController extends Controller
             $spojenaLokacija = $request->city . ', ' . $request->location;
         }
 
-        $proizvodi->update([
+        $smestaj->update([
             'name'            => $request->name,
             'location'        => $spojenaLokacija,
             'description'     => $request->desc,
@@ -162,18 +158,18 @@ class AdminProductController extends Controller
             'updated_by'      => auth()->id(),
         ]);
 
-        return redirect()->route('admin.proizvodi.index')->with('status', 'Smeštaj uspešno izmenjen!');
+        return redirect('admin/smestaji')->with('status', 'Smeštaj uspešno izmenjen!');
     }
 
     public function destroy($smestaji)
     {
-        $proizvodi = Product::findOrFail($smestaji);
+        $smestaj = Apartman::findOrFail($smestaji);
 
-        if ($proizvodi->image && file_exists(public_path($proizvodi->image))) {
-            @unlink(public_path($proizvodi->image));
+        if ($smestaj->image && file_exists(public_path($smestaj->image))) {
+            @unlink(public_path($smestaj->image));
         }
 
-        $images = is_string($proizvodi->gallery_images) ? json_decode($proizvodi->gallery_images, true) : $proizvodi->gallery_images;
+        $images = is_string($smestaj->gallery_images) ? json_decode($smestaj->gallery_images, true) : $smestaj->gallery_images;
         $images = $images ?? [];
         foreach ($images as $img) {
             if (file_exists(public_path($img))) {
@@ -181,8 +177,8 @@ class AdminProductController extends Controller
             }
         }
         
-        $proizvodi->delete();
+        $smestaj->delete();
 
-        return redirect()->route('admin.proizvodi.index')->with('status', 'Smeštaj uspešno obrisan!');
+        return redirect('admin/smestaji')->with('status', 'Smeštaj uspešno obrisan!');
     }
 }

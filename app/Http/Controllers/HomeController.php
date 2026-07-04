@@ -3,34 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\Product;
+use App\Models\Apartman;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('products')->get();
-        $totalCategories = $categories->count();
-        $totalProducts = Product::count();
+        // 1. STAVKA: Izvlačimo SVE jedinstvene gradove/lokacije iz baze za dropdown pretrage
+        // Čistimo putanju (uzimamo samo tekst pre zareza ako postoji struktura "Grad, Država")
+        $allLocations = Apartman::pluck('location')
+            ->map(function($loc) {
+                if (str_contains($loc, ',')) {
+                    return trim(explode(',', $loc)[0]);
+                }
+                return trim($loc);
+            })
+            ->unique()
+            ->filter()
+            ->values();
+
+        // 2. STAVKA: Striktno fiksiramo na maksimalno 4 najpopularnije kategorije na home page-u
+        $categories = Category::withCount('apartmani as products_count')
+            ->orderBy('products_count', 'desc')
+            ->take(4)
+            ->get();
+
+        $totalCategories = Category::count();
+        $totalProducts = Apartman::count();
         
-        // Dodat proračun recenzija za featured kartice na home stranici
-        $featuredProducts = Product::with('category')
+        // 3. STAVKA: Aktivne kartice na home page dobijaju paginaciju (8 po stranici) - daje strelice, ništa ne nestaje
+        $featuredProducts = Apartman::with('category')
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->latest()
-            ->take(8)
-            ->get();
+            ->paginate(8, ['*'], 'home_page');
 
-        return view('home', compact('categories', 'totalCategories', 'totalProducts', 'featuredProducts'));
+        return view('home', compact('categories', 'totalCategories', 'totalProducts', 'featuredProducts', 'allLocations'));
     }
 
     public function shop(Request $request)
     {
-        $categories = Category::withCount('products')->get();
-        
-        // Dodat proračun recenzija i ovde
-        $query = Product::with('category')->withAvg('reviews', 'rating')->withCount('reviews');
+        $categories = Category::withCount('apartmani as products_count')->get();
+        $query = Apartman::with('category')->withAvg('reviews', 'rating')->withCount('reviews');
 
         if ($request->category) {
             $query->where('category_id', $request->category);

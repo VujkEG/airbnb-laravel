@@ -26,8 +26,9 @@ class Category extends Model
         return $this->hasMany(Post::class);
     }
 
-    public function products()
+    // POPRAVLJENO: Relacija sada gađa Apartman model i zove se apartmani()
+    public function apartmani()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Apartman::class);
     }
 }

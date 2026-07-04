@@ -5,31 +5,28 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                
-                <div class="card-header">Dodaj novu kategoriju</div>
+                <div class="card-header fw-bold text-uppercase" style="color:#1a1a2e; font-size: 15px;">
+                    Izmeni Kategoriju / Lokaciju
+                </div>
 
                 <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
+                    <form action="{{ route('kategorija.update', $kategorija->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Upisi naziv kategorije</label>
+                            <input type="text" name="name" class="form-control" 
+                                   value="{{ $kategorija->name ?? ($kategorija->Name ?? ($kategorija->naziv ?? $kategorija->title)) }}" required>
                         </div>
-                    @endif
-                        <form class="" action="{{ route('kategorija.update', $kategorija->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Upisi naziv kategorije</label>
-                                <input type="text" class="form-control" name="name" value="{{ old('name', $kategorija->Name) }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="desc" class="form-label">Upisi opis kategorije</label>
-                                <textarea name="desc" id="" cols="30" rows="10" class="form-control">{{ old('desc', $kategorija->desc) }}</textarea>
-                            </div>
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Sacuvaj</button>
-                            </div>
-                        </form>
-                    
+
+                        {{-- POPRAVLJENO: Tekstualna zona za unos opisa je kompletno izbačena odavde --}}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success fw-bold">Sacuvaj</button>
+                            <a href="{{ route('kategorija.index') }}" class="btn btn-secondary fw-bold">Nazad</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

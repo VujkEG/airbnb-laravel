@@ -11,8 +11,9 @@ class ReviewController extends Controller
 {
     public function store(Request $request)
     {
+        // POPRAVLJENO: Validacija sada proverava tabelu 'apartmani' umesto nepostojeće 'products'
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'required|exists:apartmani,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
         ]);

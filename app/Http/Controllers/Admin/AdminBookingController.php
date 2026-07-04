@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 
-class AdminOrderController extends Controller
+class AdminBookingController extends Controller
 {
     public function __construct()
     {
@@ -15,14 +15,16 @@ class AdminOrderController extends Controller
 
     public function index()
     {
+        // POPRAVLJENO: Promenljiva preimenovana u $orders (koju prima index.blade.php kao kolekciju) ali unutar petlje koristi čist $booking
         $orders = Booking::with(['product', 'user'])->latest()->paginate(10);
-        return view('admin.narudzbine.index', compact('orders'));
+        return view('admin.rezervacije.index', compact('orders'));
     }
 
     public function show($rezervacije)
     {
-        $narudzbine = Booking::with(['product', 'user'])->findOrFail($rezervacije);
-        return view('admin.narudzbine.show', compact('narudzbine'));
+        // POPRAVLJENO: Promenljiva promenjena iz $narudzbine u $rezervacija u skladu sa novim show.blade.php
+        $rezervacija = Booking::with(['product', 'user'])->findOrFail($rezervacije);
+        return view('admin.rezervacije.show', compact('rezervacija'));
     }
 
     public function update(Request $request, $rezervacije)
@@ -43,6 +45,6 @@ class AdminOrderController extends Controller
         $booking = Booking::findOrFail($rezervacije);
         $booking->delete();
 
-        return redirect()->route('admin.narudzbine.index')->with('status', 'Rezervacija uspešno obrisana!');
+        return redirect('admin/rezervacije')->with('status', 'Rezervacija uspešno obrisana!');
     }
 }
